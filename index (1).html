@@ -1,0 +1,540 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Liba Photo - Inventaris & Kalkulator</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <!-- Menggunakan Lucide Icons untuk estetika premium -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #0a0a0a;
+            color: #e5e7eb;
+        }
+        .glass-card {
+            background: rgba(23, 23, 23, 0.8);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(16, 185, 129, 0.1);
+        }
+        .active-tab {
+            border-left: 4px solid #10b981;
+            background: rgba(16, 185, 129, 0.1);
+            color: #10b981;
+        }
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: #0a0a0a; }
+        ::-webkit-scrollbar-thumb { background: #10b981; border-radius: 10px; }
+        
+        /* Animasi halu untuk card */
+        .hover-scale { transition: all 0.3s ease; }
+        .hover-scale:hover { transform: translateY(-5px); border-color: rgba(16, 185, 129, 0.4); }
+    </style>
+</head>
+<body class="min-h-screen">
+
+    <div class="flex flex-col md:flex-row min-h-screen">
+        <nav class="w-full md:w-64 bg-black border-r border-emerald-900/30 p-6 flex flex-col gap-6">
+            <div class="flex items-center gap-3 mb-4">
+                <div class="bg-emerald-500 p-2 rounded-lg">
+                    <i data-lucide="camera" class="text-black"></i>
+                </div>
+                <h1 class="text-xl font-bold tracking-tight text-emerald-400">LIBA<span class="text-white"> PHOTO</span></h1>
+            </div>
+
+            <div class="flex flex-col gap-1">
+                <button onclick="switchTab('dashboard')" class="nav-btn flex items-center gap-3 p-3 rounded-xl hover:bg-emerald-900/20 transition-all" id="btn-dashboard">
+                    <i data-lucide="layout-dashboard" size="20"></i> Dashboard
+                </button>
+                <button onclick="switchTab('stok')" class="nav-btn flex items-center gap-3 p-3 rounded-xl hover:bg-emerald-900/20 transition-all" id="btn-stok">
+                    <i data-lucide="package" size="20"></i> Stok ATK
+                </button>
+                <button onclick="switchTab('foto')" class="nav-btn flex items-center gap-3 p-3 rounded-xl hover:bg-emerald-900/20 transition-all" id="btn-foto">
+                    <i data-lucide="printer" size="20"></i> Cetak Foto
+                </button>
+                <button onclick="switchTab('pigura')" class="nav-btn flex items-center gap-3 p-3 rounded-xl hover:bg-emerald-900/20 transition-all" id="btn-pigura">
+                    <i data-lucide="frame" size="20"></i> Galeri Pigura
+                </button>
+                <button onclick="switchTab('kalkulator')" class="nav-btn flex items-center gap-3 p-3 rounded-xl hover:bg-emerald-900/20 transition-all" id="btn-kalkulator">
+                    <i data-lucide="calculator" size="20"></i> Hitung Banner
+                </button>
+                <button onclick="switchTab('paketan')" class="nav-btn flex items-center gap-3 p-3 rounded-xl hover:bg-emerald-900/20 transition-all" id="btn-paketan">
+                    <i data-lucide="layers" size="20"></i> Menu Paketan
+                </button>
+                
+                <hr class="border-emerald-900/30 my-4">
+                
+                <button onclick="openAdmin()" class="nav-btn flex items-center gap-3 p-3 rounded-xl hover:bg-emerald-600 hover:text-white transition-all border border-emerald-600/50">
+                    <i data-lucide="shield-check" size="20"></i> Admin Panel
+                </button>
+            </div>
+        </nav>
+
+        <main class="flex-1 p-4 md:p-8 overflow-y-auto">
+            
+            <!-- Dashboard Section -->
+            <section id="tab-dashboard" class="tab-content">
+                <div class="flex justify-between items-end mb-8">
+                    <div>
+                        <h2 class="text-3xl font-bold">Ringkasan <span class="text-emerald-500">Liba Photo</span></h2>
+                        <p class="text-gray-400">Status operasional hari ini.</p>
+                    </div>
+                    <div id="real-time-clock" class="text-emerald-400 font-mono text-xl"></div>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+                    <div class="glass-card p-6 rounded-2xl">
+                        <div class="flex justify-between items-start">
+                            <div>
+                                <p class="text-gray-400 text-sm">Total Produk</p>
+                                <h3 class="text-4xl font-bold mt-1" id="stat-total-items">0</h3>
+                            </div>
+                            <div class="bg-emerald-500/10 p-3 rounded-lg text-emerald-500"><i data-lucide="boxes"></i></div>
+                        </div>
+                    </div>
+                    <div class="glass-card p-6 rounded-2xl border-l-4 border-l-yellow-500">
+                        <div class="flex justify-between items-start">
+                            <div>
+                                <p class="text-gray-400 text-sm">Stok Rendah</p>
+                                <h3 class="text-4xl font-bold mt-1" id="stat-low-stock">0</h3>
+                            </div>
+                            <div class="bg-yellow-500/10 p-3 rounded-lg text-yellow-500"><i data-lucide="alert-triangle"></i></div>
+                        </div>
+                    </div>
+                    <div class="glass-card p-6 rounded-2xl border-l-4 border-l-emerald-500">
+                        <div class="flex justify-between items-start">
+                            <div>
+                                <p class="text-gray-400 text-sm">Status Server</p>
+                                <h3 class="text-2xl font-bold mt-1 text-emerald-400 uppercase">Online</h3>
+                            </div>
+                            <div class="bg-emerald-500/10 p-3 rounded-lg text-emerald-500"><i data-lucide="check-circle"></i></div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Stok ATK Section -->
+            <section id="tab-stok" class="tab-content hidden">
+                <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">
+                    <h2 class="text-2xl font-bold">Inventaris <span class="text-emerald-500">ATK</span></h2>
+                    <div class="relative w-full md:w-64">
+                        <i data-lucide="search" class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500" size="18"></i>
+                        <input type="text" id="search-stok" placeholder="Cari barang..." class="w-full bg-black border border-emerald-900/50 rounded-xl pl-10 pr-4 py-2 focus:outline-none focus:border-emerald-500 transition-all text-sm">
+                    </div>
+                </div>
+                <div class="glass-card rounded-2xl overflow-hidden overflow-x-auto">
+                    <table class="w-full text-left">
+                        <thead>
+                            <tr class="bg-emerald-950/20 text-emerald-400 uppercase text-xs tracking-wider">
+                                <th class="p-4">Nama Barang</th>
+                                <th class="p-4">Kategori</th>
+                                <th class="p-4">Harga</th>
+                                <th class="p-4">Stok</th>
+                                <th class="p-4">Status</th>
+                            </tr>
+                        </thead>
+                        <tbody id="stok-table-body"></tbody>
+                    </table>
+                </div>
+            </section>
+
+            <!-- Cetak Foto Section -->
+            <section id="tab-foto" class="tab-content hidden">
+                <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">
+                    <h2 class="text-2xl font-bold">Layanan <span class="text-emerald-500">Cetak Foto</span></h2>
+                    <div class="relative w-full md:w-64">
+                        <i data-lucide="search" class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500" size="18"></i>
+                        <input type="text" id="search-foto" placeholder="Cari ukuran..." class="w-full bg-black border border-emerald-900/50 rounded-xl pl-10 pr-4 py-2 focus:outline-none focus:border-emerald-500 transition-all text-sm">
+                    </div>
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4" id="foto-container"></div>
+            </section>
+
+            <!-- Pigura Section -->
+            <section id="tab-pigura" class="tab-content hidden">
+                <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">
+                    <h2 class="text-2xl font-bold">Koleksi <span class="text-emerald-500">Pigura</span></h2>
+                    <div class="relative w-full md:w-64">
+                        <i data-lucide="search" class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500" size="18"></i>
+                        <input type="text" id="search-pigura" placeholder="Cari pigura..." class="w-full bg-black border border-emerald-900/50 rounded-xl pl-10 pr-4 py-2 focus:outline-none focus:border-emerald-500 transition-all text-sm">
+                    </div>
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4" id="pigura-container"></div>
+            </section>
+
+            <!-- Kalkulator Banner Section -->
+            <section id="tab-kalkulator" class="tab-content hidden">
+                <h2 class="text-2xl font-bold mb-6">Kalkulator <span class="text-emerald-500">Cetak Banner</span></h2>
+                <div class="max-w-2xl mx-auto glass-card p-8 rounded-3xl border-t-4 border-t-emerald-500">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                        <div>
+                            <label class="block text-sm text-gray-400 mb-2">Lebar (Meter)</label>
+                            <input type="number" id="calc-width" step="0.1" value="1" class="w-full bg-black/50 border border-emerald-900/50 rounded-xl p-3 focus:ring-2 focus:ring-emerald-500 focus:outline-none">
+                        </div>
+                        <div>
+                            <label class="block text-sm text-gray-400 mb-2">Tinggi (Meter)</label>
+                            <input type="number" id="calc-height" step="0.1" value="1" class="w-full bg-black/50 border border-emerald-900/50 rounded-xl p-3 focus:ring-2 focus:ring-emerald-500 focus:outline-none">
+                        </div>
+                    </div>
+                    <div class="mb-6">
+                        <label class="block text-sm text-gray-400 mb-2">Jenis Bahan</label>
+                        <select id="calc-material" class="w-full bg-black/50 border border-emerald-900/50 rounded-xl p-3 focus:ring-2 focus:ring-emerald-500 focus:outline-none text-white">
+                            <option value="25000">Frontlite Standard (Rp 25.000/m²)</option>
+                            <option value="35000">Frontlite High Res (Rp 35.000/m²)</option>
+                            <option value="45000">China 340gr (Rp 45.000/m²)</option>
+                            <option value="65000">Korchin (Rp 65.000/m²)</option>
+                        </select>
+                    </div>
+                    <div class="mb-8 p-6 bg-emerald-500/10 rounded-2xl text-center">
+                        <p class="text-gray-400 text-sm mb-1">Estimasi Harga</p>
+                        <h4 class="text-5xl font-bold text-emerald-400" id="calc-result">Rp 25.000</h4>
+                    </div>
+                    <button onclick="calculateBanner()" class="w-full bg-emerald-600 hover:bg-emerald-500 text-black font-bold py-4 rounded-xl transition-all uppercase tracking-widest">Hitung Sekarang</button>
+                </div>
+            </section>
+
+            <!-- Paketan Section -->
+            <section id="tab-paketan" class="tab-content hidden">
+                <h2 class="text-2xl font-bold mb-6">Paket <span class="text-emerald-500">Hemat Liba</span></h2>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6" id="paketan-container"></div>
+            </section>
+
+            <!-- Admin Modal -->
+            <div id="admin-modal" class="fixed inset-0 bg-black/90 z-50 flex items-center justify-center hidden p-4">
+                <div class="glass-card w-full max-w-4xl max-h-[90vh] overflow-hidden flex flex-col rounded-3xl border border-emerald-500/30">
+                    <div class="p-6 border-b border-emerald-900/30 flex justify-between items-center">
+                        <h3 class="text-xl font-bold flex items-center gap-2 text-emerald-400">
+                            <i data-lucide="shield-check"></i> Master Control Panel
+                        </h3>
+                        <button onclick="closeAdmin()" class="text-gray-400 hover:text-white"><i data-lucide="x"></i></button>
+                    </div>
+                    <div class="p-6 overflow-y-auto flex-1">
+                        <div id="admin-login" class="max-w-sm mx-auto text-center py-12">
+                            <i data-lucide="lock" size="48" class="mx-auto text-emerald-500 mb-4"></i>
+                            <h4 class="text-lg mb-4">Masukkan PIN Akses</h4>
+                            <input type="password" id="admin-pin" placeholder="****" class="bg-black/50 border border-emerald-900 px-4 py-3 rounded-xl w-full text-center text-2xl tracking-[1em] mb-4">
+                            <button onclick="verifyAdmin()" class="bg-emerald-600 text-black font-bold px-8 py-3 rounded-xl w-full">Buka Panel</button>
+                        </div>
+                        <div id="admin-content" class="hidden">
+                            <div class="mb-8 p-6 bg-emerald-900/10 rounded-2xl border border-emerald-500/20">
+                                <h4 class="text-emerald-400 font-bold mb-4 flex items-center gap-2">
+                                    <i data-lucide="plus-circle" size="18"></i> Tambah Barang Baru
+                                </h4>
+                                <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                                    <input type="text" id="new-name" placeholder="Nama Barang" class="bg-black border border-emerald-900/50 rounded-xl px-4 py-2 text-sm focus:border-emerald-500 outline-none text-white">
+                                    <select id="new-category" class="bg-black border border-emerald-900/50 rounded-xl px-4 py-2 text-sm focus:border-emerald-500 outline-none text-gray-400">
+                                        <option value="Kertas">Kertas</option>
+                                        <option value="Tinta">Tinta</option>
+                                        <option value="Alat Tulis">Alat Tulis</option>
+                                        <option value="Foto">Cetak Foto (Jasa)</option>
+                                        <option value="Pigura">Pigura</option>
+                                        <option value="Lainnya">Lainnya</option>
+                                    </select>
+                                    <input type="number" id="new-price" placeholder="Harga (Rp)" class="bg-black border border-emerald-900/50 rounded-xl px-4 py-2 text-sm focus:border-emerald-500 outline-none text-white">
+                                    <input type="number" id="new-stock" placeholder="Stok" class="bg-black border border-emerald-900/50 rounded-xl px-4 py-2 text-sm focus:border-emerald-500 outline-none text-white">
+                                </div>
+                                <button onclick="addItem()" class="mt-4 w-full md:w-auto bg-emerald-600 hover:bg-emerald-500 text-black font-bold px-8 py-2 rounded-xl text-sm transition-all">
+                                    Simpan Item Baru
+                                </button>
+                            </div>
+
+                            <hr class="border-emerald-900/30 mb-8">
+
+                            <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">
+                                <h4 class="text-emerald-400 font-bold">Daftar & Edit Inventaris</h4>
+                                <div class="relative w-full md:w-64">
+                                    <i data-lucide="search" class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500" size="18"></i>
+                                    <input type="text" id="search-admin" placeholder="Cari item..." class="w-full bg-black border border-emerald-900/50 rounded-xl pl-10 pr-4 py-2 focus:outline-none focus:border-emerald-500 transition-all text-sm text-white">
+                                </div>
+                            </div>
+                            <div class="overflow-x-auto">
+                                <table class="w-full text-left">
+                                    <thead class="bg-emerald-900/20">
+                                        <tr class="text-xs uppercase text-emerald-400">
+                                            <th class="p-3">Nama</th>
+                                            <th class="p-3">Harga</th>
+                                            <th class="p-3">Stok</th>
+                                            <th class="p-3 text-right">Aksi</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="admin-edit-body"></tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </main>
+    </div>
+
+    <!-- Notification Toast -->
+    <div id="toast" class="fixed bottom-8 right-8 bg-emerald-600 text-black px-6 py-3 rounded-xl font-bold shadow-2xl transition-all translate-y-24 opacity-0 pointer-events-none z-[100]"></div>
+
+    <script>
+        // Database utama aplikasi
+        let inventory = [
+            { id: 1, name: "Kertas A4 70gr", category: "Kertas", price: 55000, stock: 25 },
+            { id: 2, name: "Kertas F4 80gr", category: "Kertas", price: 65000, stock: 12 },
+            { id: 3, name: "Tinta Epson 003 Hitam", category: "Tinta", price: 95000, stock: 8 },
+            { id: 4, name: "Pulpen Snowman (Pack)", category: "Alat Tulis", price: 24000, stock: 15 },
+            { id: 5, name: "Pas Foto 2x3 (8 lembar)", category: "Foto", price: 15000, stock: 999 },
+            { id: 6, name: "Pas Foto 3x4 (6 lembar)", category: "Foto", price: 15000, stock: 999 },
+            { id: 7, name: "Pas Foto 4x6 (4 lembar)", category: "Foto", price: 15000, stock: 999 },
+            { id: 8, name: "Pigura Minimalis 4R", category: "Pigura", price: 12000, stock: 20 },
+            { id: 9, name: "Pigura Minimalis 10R", category: "Pigura", price: 35000, stock: 10 },
+            { id: 10, name: "Pigura Ukir 10RS", category: "Pigura", price: 75000, stock: 5 }
+        ];
+
+        let paketan = [
+            { name: "Paket Skripsi", items: "Print 50 hal + Jilid Hardcover + CD", price: 85000, icon: "graduation-cap" },
+            { name: "Paket Pas Foto", items: "Foto Studio + Cetak semua ukuran", price: 35000, icon: "camera" },
+            { name: "Paket Kantor", items: "5 Rim A4 + 2 Pack Pulpen + 1 Box Klip", price: 310000, icon: "briefcase" }
+        ];
+
+
+        // Inisialisasi ikon Lucide
+        function initIcons() {
+            if (window.lucide) {
+                lucide.createIcons();
+            }
+        }
+
+        // Jam Realtime
+        function startTime() {
+            const display = document.getElementById('real-time-clock');
+            setInterval(() => {
+                const now = new Date();
+                display.innerText = now.toLocaleTimeString('id-ID');
+            }, 1000);
+        }
+
+        // Navigasi Tab
+        function switchTab(tabId) {
+            document.querySelectorAll('.tab-content').forEach(tab => tab.classList.add('hidden'));
+            document.getElementById('tab-' + tabId).classList.remove('hidden');
+            
+            document.querySelectorAll('.nav-btn').forEach(btn => btn.classList.remove('active-tab'));
+            document.getElementById('btn-' + tabId).classList.add('active-tab');
+
+            if(tabId === 'stok') renderStokTable();
+            if(tabId === 'foto') renderCategoryGrid('foto-container', 'Foto');
+            if(tabId === 'pigura') renderCategoryGrid('pigura-container', 'Pigura');
+            if(tabId === 'paketan') renderPaketan();
+            
+            initIcons();
+        }
+
+        // Render Tabel Stok ATK
+        function renderStokTable(filter = "") {
+            const tbody = document.getElementById('stok-table-body');
+            const data = inventory.filter(item => 
+                (item.category !== 'Foto' && item.category !== 'Pigura') && 
+                item.name.toLowerCase().includes(filter.toLowerCase())
+            );
+            
+            tbody.innerHTML = data.length ? '' : '<tr><td colspan="5" class="p-8 text-center text-gray-500">Barang tidak ditemukan.</td></tr>';
+            
+            data.forEach(item => {
+                const tr = document.createElement('tr');
+                tr.className = "border-b border-emerald-900/10 hover:bg-emerald-900/5 transition-colors";
+                tr.innerHTML = `
+                    <td class="p-4 font-medium">${item.name}</td>
+                    <td class="p-4 text-gray-400 text-sm">${item.category}</td>
+                    <td class="p-4 font-mono">Rp ${item.price.toLocaleString()}</td>
+                    <td class="p-4">${item.stock}</td>
+                    <td class="p-4"><span class="px-2 py-1 rounded text-xs bg-black border ${item.stock > 10 ? 'border-emerald-500/30 text-emerald-400' : 'border-yellow-500/30 text-yellow-500'}">${item.stock > 10 ? 'Tersedia' : 'Menipis'}</span></td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        // Render Grid Visual (Foto & Pigura)
+        function renderCategoryGrid(containerId, category, filter = "") {
+            const container = document.getElementById(containerId);
+            const items = inventory.filter(i => i.category === category && i.name.toLowerCase().includes(filter.toLowerCase()));
+            
+            container.innerHTML = items.length ? '' : `<div class="col-span-full py-10 text-center text-gray-500">Item tidak ditemukan.</div>`;
+            
+            items.forEach(item => {
+                const div = document.createElement('div');
+                div.className = "glass-card p-5 rounded-2xl hover-scale group";
+                div.innerHTML = `
+                    <div class="bg-black rounded-xl h-32 mb-4 flex items-center justify-center border border-emerald-900/30 relative overflow-hidden">
+                         <i data-lucide="${category === 'Foto' ? 'image' : 'frame'}" size="40" class="text-emerald-900 group-hover:scale-110 transition-transform"></i>
+                    </div>
+                    <h4 class="font-bold text-sm mb-1 line-clamp-1">${item.name}</h4>
+                    <p class="text-emerald-400 font-mono font-bold">Rp ${item.price.toLocaleString()}</p>
+                    <p class="text-xs text-gray-500 mt-2 italic">${category === 'Foto' ? 'Layanan Jasa' : 'Tersedia: ' + item.stock + ' pcs'}</p>
+                `;
+                container.appendChild(div);
+            });
+            initIcons();
+        }
+
+        // Render Menu Paketan
+        function renderPaketan() {
+            const container = document.getElementById('paketan-container');
+            container.innerHTML = '';
+            paketan.forEach(pkg => {
+                const div = document.createElement('div');
+                div.className = "glass-card p-6 rounded-3xl relative overflow-hidden group hover:border-emerald-500/50 transition-all";
+                div.innerHTML = `
+                    <div class="absolute -right-4 -top-4 opacity-10 group-hover:rotate-12 transition-transform">
+                        <i data-lucide="${pkg.icon}" size="100"></i>
+                    </div>
+                    <h4 class="text-xl font-bold text-emerald-400 mb-2">${pkg.name}</h4>
+                    <p class="text-sm text-gray-400 mb-6 min-h-[40px]">${pkg.items}</p>
+                    <div class="flex justify-between items-center">
+                        <span class="text-2xl font-bold">Rp ${pkg.price.toLocaleString()}</span>
+                        <div class="bg-emerald-500 p-2 rounded-full text-black"><i data-lucide="tag" size="20"></i></div>
+                    </div>
+                `;
+                container.appendChild(div);
+            });
+            initIcons();
+        }
+
+        // Kalkulator Banner
+        function calculateBanner() {
+            const w = parseFloat(document.getElementById('calc-width').value) || 0;
+            const h = parseFloat(document.getElementById('calc-height').value) || 0;
+            const pricePerMeter = parseFloat(document.getElementById('calc-material').value);
+            
+            // Minimal hitung 1 meter persegi jika kecil
+            let area = w * h;
+            if(area < 1 && area > 0) area = 1; 
+            
+            let total = area * pricePerMeter;
+            document.getElementById('calc-result').innerText = `Rp ${Math.round(total).toLocaleString()}`;
+        }
+
+
+        function openAdmin() { document.getElementById('admin-modal').classList.remove('hidden'); }
+        
+        function closeAdmin() { 
+            document.getElementById('admin-modal').classList.add('hidden');
+            document.getElementById('admin-login').classList.remove('hidden');
+            document.getElementById('admin-content').classList.add('hidden');
+            document.getElementById('admin-pin').value = '';
+        }
+
+        function verifyAdmin() {
+            if(document.getElementById('admin-pin').value === '1234') { 
+                document.getElementById('admin-login').classList.add('hidden');
+                document.getElementById('admin-content').classList.remove('hidden');
+                renderAdminTable();
+            } else {
+                showToast("PIN Salah!");
+            }
+        }
+
+        // Fungsi Tambah Barang
+        function addItem() {
+            const name = document.getElementById('new-name').value;
+            const category = document.getElementById('new-category').value;
+            const price = parseInt(document.getElementById('new-price').value);
+            const stock = parseInt(document.getElementById('new-stock').value);
+
+            if (!name || isNaN(price) || isNaN(stock)) {
+                showToast("Mohon isi data dengan lengkap!");
+                return;
+            }
+
+            const newItem = {
+                id: Date.now(),
+                name: name,
+                category: category,
+                price: price,
+                stock: stock
+            };
+
+            inventory.push(newItem);
+            
+            // Reset Form
+            document.getElementById('new-name').value = '';
+            document.getElementById('new-price').value = '';
+            document.getElementById('new-stock').value = '';
+            
+            renderAdminTable();
+            updateStats();
+            showToast("Barang berhasil ditambahkan!");
+        }
+
+        // Render Tabel Admin untuk Edit & Hapus
+        function renderAdminTable(filter = "") {
+            const body = document.getElementById('admin-edit-body');
+            body.innerHTML = '';
+            inventory.forEach((item) => {
+                if(!item.name.toLowerCase().includes(filter.toLowerCase())) return;
+                
+                const tr = document.createElement('tr');
+                tr.className = "border-b border-emerald-900/10";
+                tr.innerHTML = `
+                    <td class="p-3 text-sm">
+                        <div class="font-medium">${item.name}</div>
+                        <div class="text-[10px] text-emerald-600 uppercase font-bold">${item.category}</div>
+                    </td>
+                    <td class="p-3">
+                        <input type="number" onchange="updateItemValue(${item.id}, 'price', this.value)" class="bg-black border border-emerald-900/50 rounded p-1 w-28 text-emerald-400 text-sm" value="${item.price}">
+                    </td>
+                    <td class="p-3">
+                        <input type="number" onchange="updateItemValue(${item.id}, 'stock', this.value)" class="bg-black border border-emerald-900/50 rounded p-1 w-20 text-emerald-400 text-sm" value="${item.stock}">
+                    </td>
+                    <td class="p-3 text-right">
+                        <button onclick="deleteItem(${item.id})" class="text-red-500 hover:text-red-400 p-2">
+                            <i data-lucide="trash-2" size="18"></i>
+                        </button>
+                    </td>
+                `;
+                body.appendChild(tr);
+            });
+            initIcons();
+        }
+
+        function updateItemValue(id, key, val) {
+            const item = inventory.find(i => i.id === id);
+            if(item) item[key] = parseInt(val);
+            updateStats();
+        }
+
+        function deleteItem(id) {
+            inventory = inventory.filter(i => i.id !== id);
+            renderAdminTable();
+            updateStats();
+            showToast("Item berhasil dihapus.");
+        }
+
+        function updateStats() {
+            document.getElementById('stat-total-items').innerText = inventory.length;
+            document.getElementById('stat-low-stock').innerText = inventory.filter(i => i.stock <= 10 && i.category !== 'Foto').length;
+        }
+
+        function showToast(msg) {
+            const t = document.getElementById('toast');
+            t.innerText = msg;
+            t.classList.remove('translate-y-24', 'opacity-0');
+            setTimeout(() => t.classList.add('translate-y-24', 'opacity-0'), 3000);
+        }
+
+        window.onload = () => {
+            startTime();
+            updateStats();
+            switchTab('dashboard');
+
+            // Listeners untuk Input Pencarian
+            document.getElementById('search-stok').oninput = (e) => renderStokTable(e.target.value);
+            document.getElementById('search-foto').oninput = (e) => renderCategoryGrid('foto-container', 'Foto', e.target.value);
+            document.getElementById('search-pigura').oninput = (e) => renderCategoryGrid('pigura-container', 'Pigura', e.target.value);
+            document.getElementById('search-admin').oninput = (e) => renderAdminTable(e.target.value);
+            
+            // Listeners Kalkulator
+            document.getElementById('calc-width').oninput = calculateBanner;
+            document.getElementById('calc-height').oninput = calculateBanner;
+            document.getElementById('calc-material').onchange = calculateBanner;
+        };
+    </script>
+</body>
+</html>
